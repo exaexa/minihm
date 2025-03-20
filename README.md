@@ -3,7 +3,7 @@
 
 Toy implementation of Hindley-Milner typesystem (aka algorithm W) that prints
 out the inference steps. It supports `let`-polymorphism with recursion (all
-`let`s are `letrec`s by default).
+`let`s are single-binding-`letrec`s by default).
 
 Mostly meant for education purposes.
 
