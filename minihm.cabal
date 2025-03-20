@@ -1,0 +1,26 @@
+cabal-version:      3.0
+name:               minihm
+version:            0.1.0.0
+-- synopsis:
+-- description:
+license:            Apache-2.0
+license-file:       LICENSE
+author:             Mirek Kratochvil
+maintainer:         exa.exa@gmail.com
+-- copyright:
+category:           Development
+build-type:         Simple
+extra-doc-files:    CHANGELOG.md
+-- extra-source-files:
+
+common warnings
+    ghc-options: -Wall
+
+executable minihm
+    import:           warnings
+    main-is:          Main.hs
+    -- other-modules:
+    -- other-extensions:
+    build-depends:    base ^>=4.20.0.0, transformers, haskeline
+    hs-source-dirs:   app
+    default-language: Haskell2010
