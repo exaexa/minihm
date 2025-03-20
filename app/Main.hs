@@ -272,7 +272,7 @@ infer x@(Let v d e) = do
   fullSubst dtr >>= unify dt
   dt' <- fullSubst dt >>= generalize
   modify $ \s -> s {vars = (v, dt') : vars'}
-  info $ "generalized let-variable " ++ v ++ " to type " ++ show dt
+  info $ "generalized let-variable " ++ v ++ " to type " ++ show dt'
   et <- nested (infer e)
   modify $ \s -> s {vars = vars'}
   info $ "popped let-variable " ++ v ++ " from context"

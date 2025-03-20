@@ -79,7 +79,7 @@ hm> let fix = \f.f(fix f) in fix
   - popped variable f from context with type 2 -> 3
   - inferred: \f . f (fix f) :: (2 -> 3) -> 3
 - substitute: 3 := 2
-- generalized let-variable fix to type (2 -> 3) -> 3
+- generalized let-variable fix to type forall 4 . (4 -> 4) -> 4
   - inferring fix
   - found polymorphic fix :: forall 4 . (4 -> 4) -> 4
   - instantiated fix :: (5 -> 5) -> 5
@@ -124,7 +124,7 @@ hm> let compose = \f.\g.\x.f(g x) in compose compose compose
   - popped variable f from context with type 4 -> 5
   - inferred: \f . \g . \x . f (g x) :: (4 -> 5) -> (3 -> 4) -> 3 -> 5
 - substitute: 0 := (4 -> 5) -> (3 -> 4) -> 3 -> 5
-- generalized let-variable compose to type (4 -> 5) -> (3 -> 4) -> 3 -> 5
+- generalized let-variable compose to type forall 6 . forall 7 . forall 8 . (6 -> 7) -> (8 -> 6) -> 8 -> 7
   - inferring compose compose compose
     - inferring compose compose
       - inferring compose
