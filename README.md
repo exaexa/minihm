@@ -21,33 +21,33 @@ cabal run
 ```
 hm> \f.\x.\y.f y x
 - inferring \f . \x . \y . f y x
-- pushed variable f into context with type 0
+- pushed variable f into context with type α
   - inferring \x . \y . f y x
-  - pushed variable x into context with type 1
+  - pushed variable x into context with type β
     - inferring \y . f y x
-    - pushed variable y into context with type 2
+    - pushed variable y into context with type γ
       - inferring f y x
         - inferring f y
           - inferring f
-          - found monomorphic f :: 0
+          - found monomorphic f :: α
           - inferring y
-          - found monomorphic y :: 2
-        - assuming f y to return 3
-        - substitute: 0 := 2 -> 3
-        - inferred: f :: 2 -> 3
-        - inferred: f y :: 3
+          - found monomorphic y :: γ
+        - assuming f y to return δ
+        - substitute: α := γ -> δ
+        - inferred: f :: γ -> δ
+        - inferred: f y :: δ
         - inferring x
-        - found monomorphic x :: 1
-      - assuming f y x to return 4
-      - substitute: 3 := 1 -> 4
-      - inferred: f y :: 1 -> 4
-      - inferred: f y x :: 4
-    - popped variable y from context with type 2
-    - inferred: \y . f y x :: 2 -> 4
-  - popped variable x from context with type 1
-  - inferred: \x . \y . f y x :: 1 -> 2 -> 4
-- popped variable f from context with type 2 -> 1 -> 4
-- inferred: \f . \x . \y . f y x :: (2 -> 1 -> 4) -> 1 -> 2 -> 4
+        - found monomorphic x :: β
+      - assuming f y x to return ε
+      - substitute: δ := β -> ε
+      - inferred: f y :: β -> ε
+      - inferred: f y x :: ε
+    - popped variable y from context with type γ
+    - inferred: \y . f y x :: γ -> ε
+  - popped variable x from context with type β
+  - inferred: \x . \y . f y x :: β -> γ -> ε
+- popped variable f from context with type γ -> β -> ε
+- inferred: \f . \x . \y . f y x :: (γ -> β -> ε) -> β -> γ -> ε
 >>> \f . \x . \y . f y x
  :: (a -> b -> c) -> b -> a -> c
 ```
@@ -57,34 +57,34 @@ hm> \f.\x.\y.f y x
 ```
 hm> let fix = \f.f(fix f) in fix
 - inferring let fix = \f . f (fix f) in fix
-- pushed rec-variable fix into context with type 0
+- pushed rec-variable fix into context with type α
   - inferring \f . f (fix f)
-  - pushed variable f into context with type 1
+  - pushed variable f into context with type β
     - inferring f (fix f)
       - inferring f
-      - found monomorphic f :: 1
+      - found monomorphic f :: β
       - inferring fix f
         - inferring fix
-        - found monomorphic fix :: 0
+        - found monomorphic fix :: α
         - inferring f
-        - found monomorphic f :: 1
-      - assuming fix f to return 2
-      - substitute: 0 := 1 -> 2
-      - inferred: fix :: 1 -> 2
-      - inferred: fix f :: 2
-    - assuming f (fix f) to return 3
-    - substitute: 1 := 2 -> 3
-    - inferred: f :: 2 -> 3
-    - inferred: f (fix f) :: 3
-  - popped variable f from context with type 2 -> 3
-  - inferred: \f . f (fix f) :: (2 -> 3) -> 3
-- substitute: 3 := 2
-- generalized let-variable fix to type forall 4 . (4 -> 4) -> 4
+        - found monomorphic f :: β
+      - assuming fix f to return γ
+      - substitute: α := β -> γ
+      - inferred: fix :: β -> γ
+      - inferred: fix f :: γ
+    - assuming f (fix f) to return δ
+    - substitute: β := γ -> δ
+    - inferred: f :: γ -> δ
+    - inferred: f (fix f) :: δ
+  - popped variable f from context with type γ -> δ
+  - inferred: \f . f (fix f) :: (γ -> δ) -> δ
+- substitute: δ := γ
+- generalized let-variable fix to type forall α . (α -> α) -> α
   - inferring fix
-  - found polymorphic fix :: forall 4 . (4 -> 4) -> 4
-  - instantiated fix :: (5 -> 5) -> 5
+  - found polymorphic fix :: forall α . (α -> α) -> α
+  - instantiated fix :: (ε -> ε) -> ε
 - popped let-variable fix from context
-- inferred: let fix = \f . f (fix f) in fix :: (5 -> 5) -> 5
+- inferred: let fix = \f . f (fix f) in fix :: (ε -> ε) -> ε
 >>> let fix = \f . f (fix f) in fix
  :: (a -> a) -> a
 ```
@@ -94,63 +94,63 @@ hm> let fix = \f.f(fix f) in fix
 ```
 hm> let compose = \f.\g.\x.f(g x) in compose compose compose
 - inferring let compose = \f . \g . \x . f (g x) in compose compose compose
-- pushed rec-variable compose into context with type 0
+- pushed rec-variable compose into context with type α
   - inferring \f . \g . \x . f (g x)
-  - pushed variable f into context with type 1
+  - pushed variable f into context with type β
     - inferring \g . \x . f (g x)
-    - pushed variable g into context with type 2
+    - pushed variable g into context with type γ
       - inferring \x . f (g x)
-      - pushed variable x into context with type 3
+      - pushed variable x into context with type δ
         - inferring f (g x)
           - inferring f
-          - found monomorphic f :: 1
+          - found monomorphic f :: β
           - inferring g x
             - inferring g
-            - found monomorphic g :: 2
+            - found monomorphic g :: γ
             - inferring x
-            - found monomorphic x :: 3
-          - assuming g x to return 4
-          - substitute: 2 := 3 -> 4
-          - inferred: g :: 3 -> 4
-          - inferred: g x :: 4
-        - assuming f (g x) to return 5
-        - substitute: 1 := 4 -> 5
-        - inferred: f :: 4 -> 5
-        - inferred: f (g x) :: 5
-      - popped variable x from context with type 3
-      - inferred: \x . f (g x) :: 3 -> 5
-    - popped variable g from context with type 3 -> 4
-    - inferred: \g . \x . f (g x) :: (3 -> 4) -> 3 -> 5
-  - popped variable f from context with type 4 -> 5
-  - inferred: \f . \g . \x . f (g x) :: (4 -> 5) -> (3 -> 4) -> 3 -> 5
-- substitute: 0 := (4 -> 5) -> (3 -> 4) -> 3 -> 5
-- generalized let-variable compose to type forall 6 . forall 7 . forall 8 . (6 -> 7) -> (8 -> 6) -> 8 -> 7
+            - found monomorphic x :: δ
+          - assuming g x to return ε
+          - substitute: γ := δ -> ε
+          - inferred: g :: δ -> ε
+          - inferred: g x :: ε
+        - assuming f (g x) to return ζ
+        - substitute: β := ε -> ζ
+        - inferred: f :: ε -> ζ
+        - inferred: f (g x) :: ζ
+      - popped variable x from context with type δ
+      - inferred: \x . f (g x) :: δ -> ζ
+    - popped variable g from context with type δ -> ε
+    - inferred: \g . \x . f (g x) :: (δ -> ε) -> δ -> ζ
+  - popped variable f from context with type ε -> ζ
+  - inferred: \f . \g . \x . f (g x) :: (ε -> ζ) -> (δ -> ε) -> δ -> ζ
+- substitute: α := (ε -> ζ) -> (δ -> ε) -> δ -> ζ
+- generalized let-variable compose to type forall α . forall β . forall γ . (α -> β) -> (γ -> α) -> γ -> β
   - inferring compose compose compose
     - inferring compose compose
       - inferring compose
-      - found polymorphic compose :: forall 6 . forall 7 . forall 8 . (6 -> 7) -> (8 -> 6) -> 8 -> 7
-      - instantiated compose :: (9 -> 10) -> (11 -> 9) -> 11 -> 10
+      - found polymorphic compose :: forall α . forall β . forall γ . (α -> β) -> (γ -> α) -> γ -> β
+      - instantiated compose :: (η -> θ) -> (ι -> η) -> ι -> θ
       - inferring compose
-      - found polymorphic compose :: forall 6 . forall 7 . forall 8 . (6 -> 7) -> (8 -> 6) -> 8 -> 7
-      - instantiated compose :: (12 -> 13) -> (14 -> 12) -> 14 -> 13
-    - assuming compose compose to return 15
-    - substitute: 9 := 12 -> 13
-    - substitute: 10 := (14 -> 12) -> 14 -> 13
-    - substitute: 15 := (11 -> 12 -> 13) -> 11 -> (14 -> 12) -> 14 -> 13
-    - inferred: compose :: ((12 -> 13) -> (14 -> 12) -> 14 -> 13) -> (11 -> 12 -> 13) -> 11 -> (14 -> 12) -> 14 -> 13
-    - inferred: compose compose :: (11 -> 12 -> 13) -> 11 -> (14 -> 12) -> 14 -> 13
+      - found polymorphic compose :: forall α . forall β . forall γ . (α -> β) -> (γ -> α) -> γ -> β
+      - instantiated compose :: (κ -> λ) -> (μ -> κ) -> μ -> λ
+    - assuming compose compose to return ν
+    - substitute: η := κ -> λ
+    - substitute: θ := (μ -> κ) -> μ -> λ
+    - substitute: ν := (ι -> κ -> λ) -> ι -> (μ -> κ) -> μ -> λ
+    - inferred: compose :: ((κ -> λ) -> (μ -> κ) -> μ -> λ) -> (ι -> κ -> λ) -> ι -> (μ -> κ) -> μ -> λ
+    - inferred: compose compose :: (ι -> κ -> λ) -> ι -> (μ -> κ) -> μ -> λ
     - inferring compose
-    - found polymorphic compose :: forall 6 . forall 7 . forall 8 . (6 -> 7) -> (8 -> 6) -> 8 -> 7
-    - instantiated compose :: (16 -> 17) -> (18 -> 16) -> 18 -> 17
-  - assuming compose compose compose to return 19
-  - substitute: 11 := 16 -> 17
-  - substitute: 12 := 18 -> 16
-  - substitute: 13 := 18 -> 17
-  - substitute: 19 := (16 -> 17) -> (14 -> 18 -> 16) -> 14 -> 18 -> 17
-  - inferred: compose compose :: ((16 -> 17) -> (18 -> 16) -> 18 -> 17) -> (16 -> 17) -> (14 -> 18 -> 16) -> 14 -> 18 -> 17
-  - inferred: compose compose compose :: (16 -> 17) -> (14 -> 18 -> 16) -> 14 -> 18 -> 17
+    - found polymorphic compose :: forall α . forall β . forall γ . (α -> β) -> (γ -> α) -> γ -> β
+    - instantiated compose :: (ξ -> ο) -> (π -> ξ) -> π -> ο
+  - assuming compose compose compose to return ρ
+  - substitute: ι := ξ -> ο
+  - substitute: κ := π -> ξ
+  - substitute: λ := π -> ο
+  - substitute: ρ := (ξ -> ο) -> (μ -> π -> ξ) -> μ -> π -> ο
+  - inferred: compose compose :: ((ξ -> ο) -> (π -> ξ) -> π -> ο) -> (ξ -> ο) -> (μ -> π -> ξ) -> μ -> π -> ο
+  - inferred: compose compose compose :: (ξ -> ο) -> (μ -> π -> ξ) -> μ -> π -> ο
 - popped let-variable compose from context
-- inferred: let compose = \f . \g . \x . f (g x) in compose compose compose :: (16 -> 17) -> (14 -> 18 -> 16) -> 14 -> 18 -> 17
+- inferred: let compose = \f . \g . \x . f (g x) in compose compose compose :: (ξ -> ο) -> (μ -> π -> ξ) -> μ -> π -> ο
 >>> let compose = \f . \g . \x . f (g x) in compose compose compose
  :: (a -> b) -> (c -> d -> a) -> c -> d -> b
 ```

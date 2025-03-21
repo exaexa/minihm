@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               minihm
-version:            0.1.0.0
+version:            0.1.1.0
 -- synopsis:
 -- description:
 license:            Apache-2.0

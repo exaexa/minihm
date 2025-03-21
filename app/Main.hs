@@ -5,7 +5,7 @@ import Control.Exception
 import Control.Monad (void)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State
-import Data.Char (isAlpha)
+import Data.Char (isAlpha, isSpace)
 import Data.List (nub)
 import Prelude hiding (abs)
 import System.Console.Haskeline
@@ -71,6 +71,11 @@ allTyVars (TyFun l r) = allTyVars l ++ allTyVars r
 allPolyTyVars :: PolyTy a -> [a]
 allPolyTyVars (Mono t) = allTyVars t
 allPolyTyVars (Forall a t) = [a] ++ allPolyTyVars t
+
+squashVars :: (Functor f) => (f Int -> [Int]) -> f Int -> f Int
+squashVars f t =
+  let dict = zip (nub $ f t) [0 ..]
+   in maybe undefined id . flip lookup dict <$> t
 
 {-
  - parser
@@ -180,11 +185,11 @@ assign v t' = do
   if occurs v t
     then fail
            $ "occurs check: can't substitute for "
-               ++ show v
+               ++ (greekLabels !! v)
                ++ " into type: "
-               ++ show t
+               ++ showGreek t
     else do
-      info $ "substitute: " ++ show v ++ " := " ++ show t
+      info $ "substitute: " ++ (greekLabels !! v) ++ " := " ++ showGreek t
       modify $ \s -> s {subst = (v, t) : subst s}
 
 -- fully apply the current substitution
@@ -204,12 +209,11 @@ fresh = do
   pure $ TyVar v
 
 -- let-polymorphism-handling functions
-generalize :: Ty Int -> Infer (PolyTy Int)
-generalize t = do
-  let vs = nub (allTyVars t)
-  gvs <- traverse (fmap tyVarId . const fresh) vs
-  let s = zip vs gvs
-  pure $ foldr Forall (Mono $ maybe undefined id . flip lookup s <$> t) gvs
+generalize :: Ty Int -> PolyTy Int
+generalize t' =
+  let t = squashVars allTyVars t'
+      vs = nub (allTyVars t)
+   in foldr Forall (Mono t) vs
 
 instantiate :: PolyTy Int -> Infer (Ty Int)
 instantiate = go []
@@ -229,12 +233,12 @@ infer x@(Var v) = do
   case t of
     Just (Mono t') -> do
       res <- fullSubst t'
-      info $ "found monomorphic " ++ v ++ " :: " ++ show res
+      info $ "found monomorphic " ++ v ++ " :: " ++ showGreek res
       pure res
     Just t' -> do
-      info $ "found polymorphic " ++ v ++ " :: " ++ show t'
+      info $ "found polymorphic " ++ v ++ " :: " ++ showGreek t'
       res <- instantiate t'
-      info $ "instantiated " ++ v ++ " :: " ++ show res
+      info $ "instantiated " ++ v ++ " :: " ++ showGreek res
       pure res
     _ -> fail $ "variable not in context: " ++ v
 infer x@(App l r) = do
@@ -242,46 +246,47 @@ infer x@(App l r) = do
   lt <- nested (infer l)
   rt <- nested (infer r) >>= fullSubst
   res <- fresh
-  info $ "assuming " ++ show x ++ " to return " ++ show res
+  info $ "assuming " ++ show x ++ " to return " ++ showGreek res
   fullSubst lt >>= unify (TyFun rt res)
   res' <- fullSubst res
   lt' <- fullSubst lt
-  info $ "inferred: " ++ show l ++ " :: " ++ show lt'
-  info $ "inferred: " ++ show x ++ " :: " ++ show res'
+  info $ "inferred: " ++ show l ++ " :: " ++ showGreek lt'
+  info $ "inferred: " ++ show x ++ " :: " ++ showGreek res'
   pure res'
 infer x@(Abs v l) = do
   info $ "inferring " ++ show x
   vt <- fresh
   vars' <- gets vars
   modify $ \s -> s {vars = (v, Mono vt) : vars'}
-  info $ "pushed variable " ++ v ++ " into context with type " ++ show vt
+  info $ "pushed variable " ++ v ++ " into context with type " ++ showGreek vt
   t <- nested (infer l)
   vt' <- fullSubst vt
   modify $ \s -> s {vars = vars'}
-  info $ "popped variable " ++ v ++ " from context with type " ++ show vt'
+  info $ "popped variable " ++ v ++ " from context with type " ++ showGreek vt'
   res <- fullSubst $ TyFun vt t
-  info $ "inferred: " ++ show x ++ " :: " ++ show res
+  info $ "inferred: " ++ show x ++ " :: " ++ showGreek res
   pure res
 infer x@(Let v d e) = do
   info $ "inferring " ++ show x
   vars' <- gets vars
   dtr <- fresh
   modify $ \s -> s {vars = (v, Mono dtr) : vars'}
-  info $ "pushed rec-variable " ++ v ++ " into context with type " ++ show dtr
+  info
+    $ "pushed rec-variable " ++ v ++ " into context with type " ++ showGreek dtr
   dt <- nested (infer d) >>= fullSubst
   fullSubst dtr >>= unify dt
-  dt' <- fullSubst dt >>= generalize
+  dt' <- generalize <$> fullSubst dt
   modify $ \s -> s {vars = (v, dt') : vars'}
-  info $ "generalized let-variable " ++ v ++ " to type " ++ show dt'
+  info $ "generalized let-variable " ++ v ++ " to type " ++ showGreek dt'
   et <- nested (infer e)
   modify $ \s -> s {vars = vars'}
   info $ "popped let-variable " ++ v ++ " from context"
   res <- fullSubst et
-  info $ "inferred: " ++ show x ++ " :: " ++ show res
+  info $ "inferred: " ++ show x ++ " :: " ++ showGreek res
   pure res
 
 {-
- - user front-end
+ - nice printing of types
  -}
 newtype Label =
   Label String
@@ -289,22 +294,32 @@ newtype Label =
 instance Show Label where
   show (Label s) = s
 
-niceType :: Eq t => Ty t -> Ty Label
-niceType t =
-  let vs =
-        zip
-          (nub $ allTyVars t)
-          [x : y | y <- ("" : map show [1 :: Int ..]), x <- ['a' .. 'z']]
-   in maybe undefined Label . flip lookup vs <$> t
+rangeLabels :: [Char] -> [String]
+rangeLabels range = [x : y | y <- ("" : map show [1 :: Int ..]), x <- range]
+
+asciiLabels :: [String]
+asciiLabels = rangeLabels ['a' .. 'z']
+
+greekLabels :: [String]
+greekLabels = rangeLabels ['α' .. 'ω']
+
+showGreek :: (Functor t, Show (t Label)) => t Int -> String
+showGreek = show . fmap (Label . (greekLabels !!))
+
+niceType :: [String] -> Ty Int -> Ty Label
+niceType labels t = Label . (labels !!) <$> squashVars allTyVars t
 
 inferType :: String -> IO ()
 inferType str =
   case runParser lambda str of
     [(l, _)] -> do
       (t, _) <- runStateT (infer l) emptyCtxt
-      putStrLn $ ">>> " ++ show l ++ "\n :: " ++ show (niceType t)
+      putStrLn $ ">>> " ++ show l ++ "\n :: " ++ show (niceType asciiLabels t)
     x -> fail $ "parsing failed or ambiguous: " ++ show x
 
+{-
+ - user front-end
+ -}
 main :: IO ()
 main = runInputT defaultSettings repl
   where
@@ -312,7 +327,9 @@ main = runInputT defaultSettings repl
       l <- getInputLine "hm> "
       case l of
         Nothing -> pure ()
-        Just s -> do
-          lift $ inferType s `catch` \e -> print (e :: IOException)
-          lift $ putStrLn ""
-          repl
+        Just s
+          | all isSpace s -> repl
+          | otherwise -> do
+            lift $ inferType s `catch` \e -> print (e :: IOException)
+            lift $ putStrLn ""
+            repl
