@@ -178,6 +178,13 @@ unify (TyVar v1) t2@(TyVar v2)
 unify t1 (TyVar v2) = assign v2 t1
 unify (TyVar v1) t2 = assign v1 t2
 
+unify' :: Ty Int -> Ty Int -> Infer ()
+unify' x' y' = do
+  x <- fullSubst x'
+  y <- fullSubst y'
+  info $ "solving unification (" ++ showGreek x ++ ") = (" ++ showGreek y ++ ")"
+  unify x y
+
 -- make a new substitution (v := t)
 assign :: Int -> Ty Int -> Infer ()
 assign v t' = do
@@ -186,10 +193,10 @@ assign v t' = do
     then fail
            $ "occurs check: can't substitute for "
                ++ (greekLabels !! v)
-               ++ " into type: "
+               ++ " into type "
                ++ showGreek t
     else do
-      info $ "substitute: " ++ (greekLabels !! v) ++ " := " ++ showGreek t
+      info $ "substitute " ++ (greekLabels !! v) ++ " := " ++ showGreek t
       modify $ \s -> s {subst = (v, t) : subst s}
 
 -- fully apply the current substitution
@@ -247,11 +254,11 @@ infer x@(App l r) = do
   rt <- nested (infer r) >>= fullSubst
   res <- fresh
   info $ "assuming " ++ show x ++ " to return " ++ showGreek res
-  fullSubst lt >>= unify (TyFun rt res)
+  fullSubst lt >>= unify' (TyFun rt res)
   res' <- fullSubst res
   lt' <- fullSubst lt
-  info $ "inferred: " ++ show l ++ " :: " ++ showGreek lt'
-  info $ "inferred: " ++ show x ++ " :: " ++ showGreek res'
+  info $ "inferred " ++ show l ++ " :: " ++ showGreek lt'
+  info $ "inferred " ++ show x ++ " :: " ++ showGreek res'
   pure res'
 infer x@(Abs v l) = do
   info $ "inferring " ++ show x
@@ -264,7 +271,7 @@ infer x@(Abs v l) = do
   modify $ \s -> s {vars = vars'}
   info $ "popped variable " ++ v ++ " from context with type " ++ showGreek vt'
   res <- fullSubst $ TyFun vt t
-  info $ "inferred: " ++ show x ++ " :: " ++ showGreek res
+  info $ "inferred " ++ show x ++ " :: " ++ showGreek res
   pure res
 infer x@(Let v d e) = do
   info $ "inferring " ++ show x
@@ -274,7 +281,7 @@ infer x@(Let v d e) = do
   info
     $ "pushed rec-variable " ++ v ++ " into context with type " ++ showGreek dtr
   dt <- nested (infer d) >>= fullSubst
-  fullSubst dtr >>= unify dt
+  fullSubst dtr >>= unify' dt
   dt' <- generalize <$> fullSubst dt
   modify $ \s -> s {vars = (v, dt') : vars'}
   info $ "generalized let-variable " ++ v ++ " to type " ++ showGreek dt'
@@ -282,7 +289,7 @@ infer x@(Let v d e) = do
   modify $ \s -> s {vars = vars'}
   info $ "popped let-variable " ++ v ++ " from context"
   res <- fullSubst et
-  info $ "inferred: " ++ show x ++ " :: " ++ showGreek res
+  info $ "inferred " ++ show x ++ " :: " ++ showGreek res
   pure res
 
 {-
