@@ -218,7 +218,7 @@ fresh = do
 -- let-polymorphism-handling functions
 generalize :: Ty Int -> PolyTy Int
 generalize t' =
-  let t = squashVars allTyVars t'
+  let t = t' --TODO: we might have `squashVars allTyVars t'` here but it obscures where the variables came from
       vs = nub (allTyVars t)
    in foldr Forall (Mono t) vs
 
