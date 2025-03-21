@@ -5,7 +5,7 @@ import Control.Exception
 import Control.Monad (void)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State
-import Data.Char (isAlpha, isSpace)
+import Data.Char (isAlpha, isAlphaNum, isSpace)
 import Data.List (nub)
 import Prelude hiding (abs)
 import System.Console.Haskeline
@@ -92,7 +92,7 @@ lchar :: Char -> Parser ()
 lchar = void . lexeme . char
 
 someId :: Parser String
-someId = lexeme $ munch1 isAlpha
+someId = lexeme $ (:) <$> satisfy isAlpha <*> munch isAlphaNum
 
 varId :: Parser String
 varId = do
