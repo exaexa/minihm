@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    <title>minihm in browser!</title>
+    <script type="module">
+    import { minihm } from './load.js';
+    function run_minihm() {
+      const input = document.getElementById('minihm-input').value;
+      minihm(input).then((output) => document.getElementById('minihm-output').innerText = output);
+    }
+    document.getElementById('minihm-button').addEventListener('click', run_minihm);
+    document.getElementById('minihm-input').addEventListener('keydown', function(e){if(e.keyCode===13 && e.ctrlKey){run_minihm(); return true;} return false;});
+    </script>
+    <style>
+      #minihm-input {width: 50em; height: 10em; background-color:#ffffe0; padding: 1ex; border: none;}
+      #minihm-button {display: block; border: none; font-weight: bold; padding: 2ex; margin: 2ex;}
+      #minihm-output {background-color:#f8f8f8; padding:1ex;}
+    </style>
+  </head>
+  <body>
+    <h1><a href="https://github.com/exaexa/minihm/">minihm</a> in browser!</h1>
+    <textarea id='minihm-input'>\x . \y . y x</textarea>
+    <button id='minihm-button' style="display: block;">Hindley! Damas! Milner! Go!</button>
+    <pre id='minihm-output' style="">(no output yet)</pre>
+  </body>
+</html>
