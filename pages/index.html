@@ -10,13 +10,16 @@
     }
     document.getElementById('minihm-button').addEventListener('click', run_minihm);
     </script>
+    <style>
+      #minihm-input {width: 50em; height: 10em; background-color:#ffffe0; padding: 1ex; border: none;}
+      #minihm-button {display: block; border: none; font-weight: bold; padding: 2ex; margin: 2ex;}
+      #minihm-output {background-color:#f8f8f8; padding:1ex;}
+    </style>
   </head>
   <body>
-    <h1><a href="">minihm</a> in browser</h1>
-    <textarea id='minihm-input' style="width: 50em; height: 5em;">\x . \y . y x</textarea>
-    <button id='minihm-button'>Hindley! Damas! Milner! Go!</button>
-    <p>Output:</p>
-    <pre id='minihm-output'>
-    </pre>
+    <h1><a href="">minihm</a> in browser!</h1>
+    <textarea id='minihm-input'>\x . \y . y x</textarea>
+    <button id='minihm-button' style="display: block;">Hindley! Damas! Milner! Go!</button>
+    <pre id='minihm-output' style="">(no output yet)</pre>
   </body>
 </html>
