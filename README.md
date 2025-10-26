@@ -14,6 +14,9 @@ cd minihm
 cabal run
 ```
 
+In-browser version via WASM GHC backend is available from `pages/` (build the
+binaries first with `make-browser.sh`).
+
 ## Demo
 
 ### Inferring `flip`
