@@ -24,7 +24,7 @@ executable minihm
   main-is:          Main.hs
   other-modules:    MiniHM
   build-depends:
-    , base          ^>=4.15.0.0
+    , base          >=4.15 && <5
     , haskeline
     , transformers
 
