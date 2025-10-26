@@ -9,6 +9,7 @@
       minihm(input).then((output) => document.getElementById('minihm-output').innerText = output);
     }
     document.getElementById('minihm-button').addEventListener('click', run_minihm);
+    document.getElementById('minihm-input').addEventListener('keydown', function(e){if(e.keyCode===13 && e.ctrlKey){run_minihm(); return true;} return false;});
     </script>
     <style>
       #minihm-input {width: 50em; height: 10em; background-color:#ffffe0; padding: 1ex; border: none;}
