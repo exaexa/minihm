@@ -19,7 +19,7 @@ common warnings
 executable minihm
     import:           warnings
     main-is:          Main.hs
-    -- other-modules:
+    other-modules:    MiniHM
     -- other-extensions:
     build-depends:    base ^>=4.18.0.0, transformers, haskeline
     hs-source-dirs:   .

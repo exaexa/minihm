@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head>
+    <title>minihm in browser!</title>
+    <script type="module">
+    import { minihm } from './load.js';
+    function run_minihm() {
+      const input = document.getElementById('minihm-input').value;
+      minihm(input).then((output) => document.getElementById('minihm-output').innerText = output);
+    }
+    document.getElementById('minihm-button').addEventListener('click', run_minihm);
+    </script>
+  </head>
+  <body>
+    <h1><a href="">minihm</a> in browser</h1>
+    <textarea id='minihm-input' style="width: 50em; height: 5em;">\x . \y . y x</textarea>
+    <button id='minihm-button'>Hindley! Damas! Milner! Go!</button>
+    <p>Output:</p>
+    <pre id='minihm-output'>
+    </pre>
+  </body>
+</html>
