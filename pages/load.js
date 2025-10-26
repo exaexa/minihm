@@ -1,4 +1,9 @@
 
+/* Done following the tutorial from Finley McIlwaine at
+ * https://finley.dev/blog/2024-08-24-ghc-wasm.html
+ * (Thanks a lot!!!)
+ */
+
 import { WASI } from "https://cdn.jsdelivr.net/npm/@runno/wasi@0.7.0/dist/wasi.js";
 import ghc_wasm_jsffi from "./ghc_wasm_jsffi.js";
 
